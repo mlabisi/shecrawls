@@ -12,23 +12,22 @@ import org.jsoup.select.Elements; //list of elements
 public class Crawler {
 	private Document doc;  
 	private String seedURL;
-	private ArrayList<String> desiredLangs = new ArrayList<String>();
+	private String language;
+	private ArrayList<String> links = new ArrayList<String>();
 	
 	//constructor takes URL and desired language 
-	public Crawler(String url, String lang1, String lang2, String lang3){
+	public Crawler(String url, String lang){
 		try {
 			this.seedURL = url;
 			this.doc = Jsoup.connect(seedURL).get();
+			this.language=lang;
 			String title=doc.title();
 			System.out.println(title);
 			
-			desiredLangs.add(lang1);
-			desiredLangs.add(lang2);
-			desiredLangs.add(lang3);
 			//System.out.println(checkLang());
-			if(checkLang()) {
-				downloadContent();
-			}
+			//if(checkLang(this.doc)) {
+			//	downloadContent(doc);
+			//}
 		}
 		
 		catch(Exception e) {
@@ -36,20 +35,31 @@ public class Crawler {
 		}
 	}
 	
-	private Boolean checkLang() {
+	private Boolean checkLang(Document d) {
 		Element language = doc.select("html").first();
 		String docLang = language.attr("lang");
 		System.out.println(docLang);
 			
-		if(desiredLangs.contains(docLang)) {
+		if(docLang==this.language) {
 			return true;
 			}
 		return false;
 	}
 	
-	private void downloadContent() {
+	//get links, count links 
+	//take in a URL 
+	private void downloadContent(String url) {
 		try {
-			File file =new File("src/Repository/test.txt");
+			//convert to doc
+			//check language 
+			//download ALL the content, place in Repo folder
+			//search for all outlinks 
+			//add URL + linkCount to report.csv 
+			//call downloadContent on all outlinks
+			Document u = Jsoup.connect(url).get();
+			
+			int linkCount = 0;
+			File file =new File("src/Repository/something ");
 			FileWriter fw = new FileWriter(file);
 			//select paragraph elements
 			Elements content = doc.select("p");
@@ -66,6 +76,10 @@ public class Crawler {
 		catch (Exception e) {
 			System.out.println("Couldn't write to file");
 		}	
+	}
+	
+	private void getLinks(String URL) {
+		//arraylist
 	}
 } //end Crawler 
 	
