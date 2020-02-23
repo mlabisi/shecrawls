@@ -10,18 +10,16 @@ import org.jsoup.nodes.Element; //HTML element - extract data, manipulate HTML
 import org.jsoup.select.Elements; //list of elements 
 
 public class Crawler {
-	private Document doc;  
-	private String seedURL;
+	private Document doc;
 	private String language;
 	private ArrayList<String> links = new ArrayList<String>();
 	
 	//constructor takes URL and desired language 
 	public Crawler(String url, String lang){
 		try {
-			this.seedURL = url;
-			this.doc = Jsoup.connect(seedURL).get();
-			this.language=lang;
-			downloadContent(this.seedURL);
+			this.doc = Jsoup.connect(url).get();
+			this.language = lang;
+			downloadContent(url);
 		}
 		
 		catch(Exception e) {
@@ -33,11 +31,8 @@ public class Crawler {
 		Element language = doc.select("html").first();
 		String docLang = language.attr("lang");
 		System.out.println(docLang);
-			
-		if(docLang==this.language) {
-			return true;
-			}
-		return false;
+
+		return docLang.equals(this.language);
 	}
 	
 	//get links, count links 
@@ -50,17 +45,17 @@ public class Crawler {
 			Document d = Jsoup.connect(url).get();
 
 			//check language
-			checkLang(d);
+			if (checkLang(d)) {
+				//download ALL the content, place in Repo folder
+				extractContent(d);
 
-			//download ALL the content, place in Repo folder
-			extractContent(d);
+				//search for all outlinks
 
-			//search for all outlinks
+				//add URL + linkCount to report.csv
+				addCSVEntry("");
 
-			//add URL + linkCount to report.csv
-			addCSVEntry("");
-
-			//call downloadContent on all outlinks
+				//call downloadContent on all outlinks
+			}
 		}
 		
 		catch (Exception e) {
@@ -79,35 +74,4 @@ public class Crawler {
 	private void addCSVEntry(String entry) {
 
 	}
-} //end Crawler 
-	
-	
-	/**
-		//print links from the whole page
-		Elements links = doc.select("a[href]");
-		/**for (Element link: links) {
-			System.out.println("\nlink: " + link.attr("href"));
-			System.out.println("text :" +  link.text());
-			}
-			
-		//select links
-		for(Element link: links) {
-		String linkHref = link.attr("href");
-		String linkText = link.text();
-		String linkOuter = link.outerHtml();
-		String linkInner = link.html();
-		System.out.println(linkHref + "t" + linkText + "t" + linkOuter + "t" + linkInner);
-			outlinks++;
-		} 
-			
-		//select paragraph elements
-		Elements content = doc.select("p");
-			for(Element text: content) {
-				String ptext= text.attr("p");
-				String outerP=text.outerHtml();
-				String innerP=text.outerHtml();
-				System.out.println(ptext + " " + outerP + " " + innerP);
-			}
-			System.out.println(outlinks);
-		}
-	} **/
+} //end Crawler
