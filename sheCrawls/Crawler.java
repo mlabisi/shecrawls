@@ -21,13 +21,7 @@ public class Crawler {
 			this.seedURL = url;
 			this.doc = Jsoup.connect(seedURL).get();
 			this.language=lang;
-			String title=doc.title();
-			System.out.println(title);
-			
-			//System.out.println(checkLang());
-			//if(checkLang(this.doc)) {
-			//	downloadContent(doc);
-			//}
+			downloadContent(this.seedURL);
 		}
 		
 		catch(Exception e) {
@@ -51,7 +45,9 @@ public class Crawler {
 	private void downloadContent(String url) {
 		try {
 			//convert to doc
-			//check language 
+			Document d = Jsoup.connect(url).get();
+			//check language
+			checkLang(d);
 			//download ALL the content, place in Repo folder
 			//search for all outlinks 
 			//add URL + linkCount to report.csv 
