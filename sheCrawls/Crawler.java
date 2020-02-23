@@ -1,5 +1,5 @@
 /**
- * Crawler object class. 
+ * Crawler object class.
  */
 package sheCrawls;
 import java.io.*;
@@ -43,31 +43,25 @@ public class Crawler {
 	//get links, count links 
 	//take in a URL 
 	private void downloadContent(String url) {
+		int linkCount = 0;
+
 		try {
 			//convert to doc
 			Document d = Jsoup.connect(url).get();
+
 			//check language
 			checkLang(d);
+
 			//download ALL the content, place in Repo folder
-			//search for all outlinks 
-			//add URL + linkCount to report.csv 
+			extractContent(d);
+
+			//search for all outlinks
+
+			//add URL + linkCount to report.csv
+			addCSVEntry("");
+
 			//call downloadContent on all outlinks
-			Document u = Jsoup.connect(url).get();
-			
-			int linkCount = 0;
-			File file =new File("src/Repository/something ");
-			FileWriter fw = new FileWriter(file);
-			//select paragraph elements
-			Elements content = doc.select("p");
-				for(Element text: content) {
-					String ptext= text.attr("p");
-					String outerP=text.outerHtml();
-					String innerP=text.outerHtml();
-					fw.write(ptext + " " + outerP + " " + innerP);
-					
-				}
-				fw.close();
-		} 
+		}
 		
 		catch (Exception e) {
 			System.out.println("Couldn't write to file");
@@ -76,6 +70,14 @@ public class Crawler {
 	
 	private void getLinks(String URL) {
 		//arraylist
+	}
+
+	private void extractContent(Document doc) {
+
+	}
+
+	private void addCSVEntry(String entry) {
+
 	}
 } //end Crawler 
 	
