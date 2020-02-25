@@ -37,11 +37,10 @@ public class Crawler {
     //take in a URL
     private void downloadContent(String url) {
         int linkCount = 0;
-        Document d;
 
         try {
             //convert to doc
-            d = Jsoup.connect(url).get();
+            Document d = Jsoup.connect(url).get();
 
             //check language
             if (checkLang(d)) {
@@ -51,7 +50,7 @@ public class Crawler {
                 //search for all outlinks
 
                 //add URL + linkCount to report.csv
-                addCSVEntry("");
+                addCSVEntry(d.location(), linkCount);
 
                 //call downloadContent on all outlinks
             }
@@ -74,15 +73,23 @@ public class Crawler {
         dir.mkdir();
 
         File file = new File(dirName + File.separator + fileName + fileExt);
-        try (FileWriter fw = new FileWriter(file.getAbsoluteFile());
-             BufferedWriter bw = new BufferedWriter(fw)) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()))) {
             bw.write(docHTML);
         } catch (IOException e) {
-            System.out.println("Couldn't write to file");
+            System.out.println("Couldn't write to " + fileName);
         }
     }
 
-    private void addCSVEntry(String entry) {
+    private void addCSVEntry(String url, int ct) {
+        String fileName = System.getProperty("user.dir") + "/report.csv";
+        String[] entry = {url, ct + ""};
 
+        File file = new File(fileName);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile(), true))) {
+            bw.write(String.join(",", entry) + "\n");
+        } catch (IOException e) {
+            System.out.println("Couldn't write to " + fileName);
+        }
     }
 } //end Crawler
