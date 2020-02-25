@@ -68,7 +68,7 @@ public class Crawler {
         String dirName = System.getProperty("user.dir") + "/repository";
         String fileName = d.title().replace(" ", "");
         String fileExt = ".txt";
-        String docText = d.text();
+        String docHTML = d.outerHtml();
 
         File dir = new File(dirName);
         dir.mkdir();
@@ -76,7 +76,7 @@ public class Crawler {
         File file = new File(dirName + File.separator + fileName + fileExt);
         try (FileWriter fw = new FileWriter(file.getAbsoluteFile());
              BufferedWriter bw = new BufferedWriter(fw)) {
-            bw.write(docText);
+            bw.write(docHTML);
         } catch (IOException e) {
             System.out.println("Couldn't write to file");
         }
