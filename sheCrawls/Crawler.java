@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import org.jsoup.Jsoup; //import core public access point for jsoup
 import org.jsoup.nodes.Document; //HTML document 
 import org.jsoup.nodes.Element; //HTML element - extract data, manipulate HTML
-import org.jsoup.select.Elements; //list of elements 
+
 
 public class Crawler {
     private String language;
@@ -46,7 +46,7 @@ public class Crawler {
             //check language
             if (checkLang(d)) {
                 //download ALL the content, place in repository directory
-                extractContent(d);
+                exportContent(d);
 
                 //search for all outlinks
 
@@ -64,7 +64,7 @@ public class Crawler {
         //arraylist
     }
 
-    private void extractContent(Document d) {
+    private void exportContent(Document d) {
         String dirName = System.getProperty("user.dir") + "/repository";
         String fileName = d.title().replace(" ", "");
         String fileExt = ".txt";
