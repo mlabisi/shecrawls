@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import org.jsoup.Jsoup; //import core public access point for jsoup
 import org.jsoup.nodes.Document; //HTML document 
 import org.jsoup.nodes.Element; //HTML element - extract data, manipulate HTML
+import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
 
 
 public class Crawler {
@@ -67,7 +69,7 @@ public class Crawler {
         String dirName = System.getProperty("user.dir") + "/repository";
         String fileName = d.title().replace(" ", "");
         String fileExt = ".txt";
-        String docHTML = d.outerHtml();
+        String docHTML = Jsoup.clean(d.html(), Whitelist.relaxed().removeTags("img"));
 
         File dir = new File(dirName);
         dir.mkdir();
