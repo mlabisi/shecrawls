@@ -50,7 +50,7 @@ public class Crawler {
                 //search for all outlinks
 
                 //add URL + linkCount to report.csv
-                addCSVEntry(d.location(), linkCount);
+                addCSVEntry(this.language, d.location(), linkCount);
 
                 //call downloadContent on all outlinks
             }
@@ -80,9 +80,9 @@ public class Crawler {
         }
     }
 
-    private void addCSVEntry(String url, int ct) {
+    private void addCSVEntry(String lang, String url, int ct) {
         String fileName = System.getProperty("user.dir") + "/report.csv";
-        String[] entry = {url, ct + ""};
+        String[] entry = {lang, url, ct + ""};
 
         File file = new File(fileName);
 
