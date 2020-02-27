@@ -7,7 +7,7 @@ public class Driver {
 		String URL = "https://en.wikipedia.org/wiki/Eiffel_Tower";
 		Crawler enC = new Crawler (URL, "en", false);
 		Crawler frC = new Crawler (URL, "fr", true);
-		Crawler esC = new Crawler (URL, "pt", false);
+		Crawler esC = new Crawler (URL, "es", false);
 
 		System.out.println("Now running the English crawler");
 		enC.crawl();
