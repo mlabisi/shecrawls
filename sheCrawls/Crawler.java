@@ -6,9 +6,9 @@ package sheCrawls;
 import java.io.*;
 import java.util.ArrayList;
 
-import org.jsoup.Jsoup; //import core public access point for jsoup
-import org.jsoup.nodes.Document; //HTML document
-import org.jsoup.nodes.Element; //HTML element - extract data, manipulate HTML
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.jsoup.safety.Whitelist;
 
@@ -17,41 +17,55 @@ import com.cybozu.labs.langdetect.DetectorFactory;
 import com.cybozu.labs.langdetect.LangDetectException;
 
 public class Crawler {
+    private String seed;
     private String language;
     private ArrayList<String> links;
+    private int exportedCt;
+    private boolean debugMode;
 
 
-    public Crawler(String url, String lang) {
+    public Crawler(String url, String lang, boolean db) {
+        this.seed = url;
         this.language = lang;
         this.links = new ArrayList<>();
 
-        this.links.add(url);
+        this.exportedCt = 0;
+        this.debugMode = db;
 
-        crawl(url, 0);
+        this.links.add(this.seed);
+
+    }
+
+    void crawl() {
+        crawl(this.seed, 0);
     }
 
     private void crawl(String url, int crawlCt) {
         try {
             Document d = Jsoup.connect(url).get();
-            ArrayList<String> outlinks;
-            System.out.println();
+            ArrayList<String> outlinks = getPageLinks(d);
+
+            if (debugMode) {
+                System.out.println();
+            }
 
             if (checkLang(d)) {
-                crawlCt++;
-
                 exportContent(d);
-                outlinks = getPageLinks(d);
                 addCSVEntry(this.language, url, outlinks.size());
+                crawlCt++;
+                this.exportedCt++;
+            }
 
-
-                for (int i = 0; i < Math.min(outlinks.size(), 10) && links.size() < 150; i++) {
-                    String outlink = outlinks.get(i);
-                    for (int j = -1; j < crawlCt; j++) {
-                        System.out.print("\t");
+            for (int i = 0; (i < outlinks.size()) && (exportedCt < 100); i++) {
+                String outlink = outlinks.get(i);
+                if (debugMode) {
+                    for (int j = 0; j < crawlCt; j++) {
+                        System.out.print("  ");
                     }
-                    System.out.print(">  (Outlink #" + (i+1) + " of " + outlinks.size() + "):\t" + outlink );
-                    crawl(outlink, crawlCt);
+
+                    System.out.print(">  (Outlink #" + (i + 1) + " of " + outlinks.size() + "):\t" + outlink);
                 }
+                crawl(outlink, crawlCt);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -68,15 +82,15 @@ public class Crawler {
     }
 
     private String detect(String text) {
-       try {
-           Detector detector = DetectorFactory.create();
-           detector.append(text);
-           return detector.detect();
-       } catch (LangDetectException e) {
-           System.out.println(e.getMessage());
-       }
+        try {
+            Detector detector = DetectorFactory.create();
+            detector.append(text);
+            return detector.detect();
+        } catch (LangDetectException e) {
+            System.out.println(e.getMessage());
+        }
 
-       return "fail";
+        return "fail";
     }
 
     private void exportContent(Document d) {
