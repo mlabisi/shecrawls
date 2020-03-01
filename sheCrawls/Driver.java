@@ -5,9 +5,9 @@ public class Driver {
 
 	public static void main(String[] args) throws IOException {
 		String URL = "https://en.wikipedia.org/wiki/Eiffel_Tower";
-		Crawler enC = new Crawler (URL, "en", true);
-		Crawler frC = new Crawler (URL, "fr", true);
-		Crawler esC = new Crawler (URL, "es", true);
+		Crawler enC = new Crawler (URL, "en", false);
+		Crawler frC = new Crawler (URL, "fr", false);
+		Crawler esC = new Crawler (URL, "es", false);
 
 		System.out.println("Now running the English crawler");
 		enC.crawl();

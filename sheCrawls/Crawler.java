@@ -4,7 +4,7 @@
 package sheCrawls;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,24 +20,29 @@ public class Crawler {
     private String seed;
     private String language;
     private ArrayList<String> links;
+    private Map<String, Integer> dictionary;
     private int exportedCt;
     private boolean debugMode;
 
+    private final List<String> TO_IGNORE = Arrays.asList("!", "©", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "-",
+            "+", "=", "{", "[", "}", "]", "|", ";", ":", "\"", "<", ">", "?", "/", ".", ",", " ");
 
-    public Crawler(String url, String lang, boolean db) {
+    public Crawler(String url, String lang, boolean debug) {
         this.seed = url;
         this.language = lang;
+
         this.links = new ArrayList<>();
+        this.dictionary = new HashMap<>();
 
         this.exportedCt = 0;
-        this.debugMode = db;
+        this.debugMode = debug;
 
         this.links.add(this.seed);
-
     }
 
     void crawl() {
         crawl(this.seed, 0);
+        exportAnalytics();
     }
 
     private void crawl(String url, int crawlCt) {
@@ -52,12 +57,19 @@ public class Crawler {
             if (checkLang(d)) {
                 exportContent(d);
                 addCSVEntry(this.language, url, outlinks.size());
+                collectWords(d.text());
+
                 crawlCt++;
                 this.exportedCt++;
             }
 
-            for (int i = 0; (i < outlinks.size()) && (exportedCt < 100); i++) {
+            for (int i = 0; (i < Math.min(outlinks.size(), 5)) && (exportedCt < 100); i++) {
                 String outlink = outlinks.get(i);
+
+                if(!isLink(outlink)) {
+                    continue;
+                }
+
                 if (debugMode) {
                     for (int j = 0; j < crawlCt; j++) {
                         System.out.print("  ");
@@ -65,6 +77,7 @@ public class Crawler {
 
                     System.out.print(">  (Outlink #" + (i + 1) + " of " + outlinks.size() + "):\t" + outlink);
                 }
+
                 crawl(outlink, crawlCt);
             }
         } catch (Exception e) {
@@ -73,7 +86,8 @@ public class Crawler {
     }
 
     private Boolean checkLang(Document doc) {
-        String docLang = detect(doc.body().text());
+        String text = doc.text();
+        String docLang = detect(text);
 
         Element language = doc.select("html").first();
         String encoding = language.attr("lang");
@@ -95,9 +109,11 @@ public class Crawler {
 
     private void exportContent(Document d) {
         String dirName = System.getProperty("user.dir") + "/repository";
-        String fileName = d.title().replace(" ", "");
+        String fileName = d.title()
+                .replace(" ", "")
+                .replace("/", "");
         String fileExt = ".txt";
-        String docHTML = Jsoup.clean(d.html(), Whitelist.relaxed().removeTags("img"));
+        String docHTML = Jsoup.clean(d.html(), Whitelist.basic());
 
         File dir = new File(dirName);
         dir.mkdir();
@@ -111,28 +127,28 @@ public class Crawler {
     }
 
     private ArrayList<String> getPageLinks(Document d) {
-        String dUrl = d.location();
         ArrayList<String> outlinks = new ArrayList<>();
         try {
             Elements urls = d.select("a[href]");
 
             for (Element url : urls) {
                 String href = url.attr("href");
-                if (!links.contains(href) && !outlinks.contains(href) && isValid(href)) {
+                if (!links.contains(href) && !outlinks.contains(href) && isLink(href)) {
                     links.add(href);
                     outlinks.add(href);
                 }
 
             }
         } catch (Exception e) {
-            System.out.print("For '" + dUrl + "': " + e.getMessage());
+            System.out.print("For '" + d.location() + "': " + e.getMessage());
         }
+        Collections.sort(outlinks);
 
         return outlinks;
     }
 
-    private boolean isValid(String href) {
-        return !(href.startsWith("/") || href.isBlank() || href.startsWith("?") || href.startsWith("./") || href.startsWith("../") || href.startsWith("#") || href.startsWith("tel:"));
+    private boolean isLink(String href) {
+        return href.startsWith("http");
     }
 
     private void addCSVEntry(String lang, String url, int ct) {
@@ -148,4 +164,35 @@ public class Crawler {
         }
     }
 
+    private void collectWords(String text) {
+        String[] tokens = text.toLowerCase().split(" ");
+        for (String token : tokens) {
+            if (TO_IGNORE.contains(token) || !token.matches("^[a-zA-Z]*$") || token.equals("")) {
+                continue;
+            }
+
+            if (!this.dictionary.containsKey(token)) {
+                this.dictionary.put(token, 1);
+            } else {
+                int ct = this.dictionary.get(token);
+                this.dictionary.put(token, ct + 1);
+            }
+        }
+    }
+
+
+    private void exportAnalytics() {
+        String fileName = System.getProperty("user.dir") + "/analytics_" + this.language + ".csv";
+        File file = new File(fileName);
+
+        dictionary.forEach((word, freq) -> {
+            String[] entry = {word.replace(",", ""), freq + ""};
+
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile(), true))) {
+                bw.write(String.join(",", entry) + "\n");
+            } catch (IOException e) {
+                System.out.println("Couldn't write to " + fileName);
+            }
+        });
+    }
 } //end Crawler
